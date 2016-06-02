@@ -50,8 +50,6 @@
       $message = join("<br />", $file->errors);
     }
   }
-
-  //$files = File::find_all();
 ?>
 
 <?php include_layout_template('header.php'); ?>
@@ -87,7 +85,7 @@
     }
 
     if($pagination->has_next_page()) { 
-      echo " <a href=\"index.php?page=";
+      echo " <a href=\"upload.php?page=";
       echo $pagination->next_page();
       echo "\">Вперед &raquo;</a> "; 
     }
