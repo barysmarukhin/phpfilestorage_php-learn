@@ -5,7 +5,8 @@ require_once(LIB_PATH.DS.'database.php');
 
 class DatabaseObject {
 
-	public static function find_all() {
+	  // Common Database Methods
+  public static function find_all() {
     return static::find_by_sql("SELECT * FROM ".static::$table_name);
   }
   
@@ -17,25 +18,25 @@ class DatabaseObject {
   
   public static function find_by_sql($sql="") {
     global $database;
-    $result_set = $database->query($sql);//Получаем данные в виде матрицы
+    $result_set = $database->query($sql);
     $object_array = array();
     while ($row = $database->fetch_array($result_set)) {
-      $object_array[] = static::instantiate($row);//Получаем массив объектов,где каждый элемент массива вмещает в себя отдельную строку из таблицы (каждая строка таблицы обрабатывается функцией instantiate)
+      $object_array[] = static::instantiate($row);
     }
-    return $object_array;//Возвращаем заполненный из базы данных массив объектов
+    return $object_array;
   }
 
-  public static function count_all(){//Функция считает количество строк в таблице
+  public static function count_all() {
     global $database;
-    $sql = "SELECT COUNT(*) FROM".static::$table_name;//Формируем sql запрос (подсчет строк)
-    $result_set = $database->query($sql);//Делаем запрос к базе данных
-    $row = $database->fetch_array($result_set);//Присваиваем первую строку результата запроса переменной $row
-    return array_shift($row);//Получаем информацию о количестве строк в виде числа путем извлечения первого элемента из массива $row
+    $sql = "SELECT COUNT(*) FROM ".static::$table_name;
+    $result_set = $database->query($sql);
+    $row = $database->fetch_array($result_set);
+    return array_shift($row);
   }
 
-  private static function instantiate($record) {//Переменная $record представляет каждую отдельную строчку таблицы в виде ассоциативного массива атрибут=>значение
+  private static function instantiate($record) {
     // Could check that $record exists and is an array
-    $object = new static;//создаем объект
+    $object = new static;
     // Simple, long-form approach:
     // $object->id        = $record['id'];
     // $object->username  = $record['username'];
@@ -44,7 +45,7 @@ class DatabaseObject {
     // $object->last_name   = $record['last_name'];
     
     // More dynamic, short-form approach:
-    foreach($record as $attribute=>$value){//Проходим по каждой паре атрибут=>значение в строке таблицы (массив $record)
+    foreach($record as $attribute=>$value){
       if($object->has_attribute($attribute)) {
         $object->$attribute = $value;
       }
@@ -52,21 +53,18 @@ class DatabaseObject {
     return $object;
   }
   
-  private function has_attribute($attribute) {//Функция принимает атрибут, получаемый из базы данных
-    // get_object_vars returns an associative array with all attributes 
-    // (incl. private ones!) as the keys and their current values as the value
-    $object_vars = $this->attributes();//Получаем массив значений из существующих в массиве $db_fields атрибутов
+  private function has_attribute($attribute) {
     // We don't care about the value, we just want to know if the key exists
     // Will return true or false
-    return array_key_exists($attribute, $object_vars);
+    return array_key_exists($attribute, $this->attributes());
   }
 
   protected function attributes() { 
-    // return an array of attribute keys and their values
+    // return an array of attribute names and their values
     $attributes = array();
-    foreach (static::$db_fields as $field) {
-      if(property_exists($this, $field)){
-        $attributes[$field] = $this->$field;//Например $comment->photograph_id
+    foreach(static::$db_fields as $field) {
+      if(property_exists($this, $field)) {
+        $attributes[$field] = $this->$field;
       }
     }
     return $attributes;
@@ -82,11 +80,12 @@ class DatabaseObject {
     }
     return $clean_attributes;
   }
-
-  public function save() {//Сохраненине измененных существующих или добавление новых записей
-    // A new record won't have an id yet.
-    return isset($this->id) ? $this->update() : $this->create();
-  }
+  
+  // replaced with a custom save()
+  // public function save() {
+  //   // A new record won't have an id yet.
+  //   return isset($this->id) ? $this->update() : $this->create();
+  // }
   
   public function create() {
     global $database;
@@ -141,7 +140,7 @@ class DatabaseObject {
     // NB: After deleting, the instance of User still 
     // exists, even though the database entry does not.
     // This can be useful, as in:
-    // echo $user->first_name . " was deleted";
+    //   echo $user->first_name . " was deleted";
     // but, for example, we can't call $user->update() 
     // after calling $user->delete().
   }

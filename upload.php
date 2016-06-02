@@ -25,6 +25,7 @@
   $sql = "SELECT * FROM files ";
   $sql .= "LIMIT {$per_page} ";
   $sql .= "OFFSET {$pagination->offset()}";
+  //$sql .= "ORDER BY created ASC";
   $files = File::find_by_sql($sql);
   
   // Need to add ?page=$page to all links we want to 
